@@ -24,7 +24,7 @@ jobs:
       name: 'Build'
       steps:
         - uses: actions/checkout@v3
-        - run: docker build --build-arg CONFIG=$matrix .
+        - run: docker build --build-arg CONFIG='${{matrix}}' .
 
 #trial with toJSON, to avoid the previous problem and pass a JSON string to docker
 #failure again: the JSON is multiline, and can not be interpreted by the docker build
@@ -36,7 +36,7 @@ jobs:
       name: 'Build'
       steps:
         - uses: actions/checkout@v3
-        - run: docker build --build-arg CONFIG=${{ toJSON($matrix) }}
+        - run: docker build --build-arg CONFIG='${{ toJSON(matrix) }}'
 
 #it works with shell command - not very user-friendly
 #it seems to be the most simple way to do it
@@ -53,3 +53,5 @@ jobs:
       - run: |
             myvar=$(echo "$(jq -s -c '${{ toJSON(matrix) }}')")
             docker build --build-arg CONFIG=$myvar .
+
+#it could be cool to have a JSON iteration mechanism, "easy" to use
