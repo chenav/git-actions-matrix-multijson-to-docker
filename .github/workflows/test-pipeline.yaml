@@ -1,0 +1,55 @@
+#Demo Multi JSON in a matrix to build variant of docker images (based on the same dockerfile)
+name: Multi JSON matrix, creating variations of node-red docker images
+on: 
+  push:
+    branches: [ main ]
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          matrixStringifiedObject="{\"include\":[{\"key1\":\"value1\",\"key2\":\"value1\"},{\"key1\":\"value2\",\"key2\":\"value2\"}]}"
+          echo "matrix=$matrixStringifiedObject" >> $GITHUB_OUTPUT
+
+#simple case with fromJSON (which would be cool, if it worked)
+#engine evaluates $matrix as 'Object' which is not the JSON we would like to pass to the docker build process
+  job2:
+      needs: job1
+      runs-on: ubuntu-latest
+      strategy:
+        matrix: ${{fromJSON(needs.job1.outputs.matrix)}}
+      name: 'Build'
+      steps:
+        - uses: actions/checkout@v3
+        - run: docker build --build-arg CONFIG=$matrix .
+
+#trial with toJSON, to avoid the previous problem and pass a JSON string to docker
+#failure again: the JSON is multiline, and can not be interpreted by the docker build
+  job3:
+      needs: job1
+      runs-on: ubuntu-latest
+      strategy:
+        matrix: ${{fromJSON(needs.job1.outputs.matrix)}}
+      name: 'Build'
+      steps:
+        - uses: actions/checkout@v3
+        - run: docker build --build-arg CONFIG=${{ toJSON($matrix) }}
+
+#it works with shell command - not very user-friendly
+#it seems to be the most simple way to do it
+#other trials could involve cat, printf, sed and other "ugly" syntaxes
+  job4:
+    name: 'Build Docker with shell to flatten JSON in one-line string'
+    needs: job1
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJSON(needs.job1.outputs.matrix)}}
+    
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+            myvar=$(echo "$(jq -s -c '${{ toJSON(matrix) }}')")
+            docker build --build-arg CONFIG=$myvar .

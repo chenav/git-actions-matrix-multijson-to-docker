@@ -1,0 +1,20 @@
+{
+    "name": "Test project for multi JSON matrix in Github actions",
+    "description": "Just a demo",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "start": "node $NODE_OPTIONS node_modules/node-red/red.js $FLOWS",
+        "debug": "node --inspect=0.0.0.0:9229 $NODE_OPTIONS node_modules/node-red/red.js $FLOWS",
+        "debug_brk": "node --inspect=0.0.0.0:9229 --inspect-brk $NODE_OPTIONS node_modules/node-red/red.js $FLOWS"
+    },
+    "dependencies": {
+        "node-red": "3.0.2",
+        "node-red-contrib-bacnet": "~0.2.7",
+        "node-red-contrib-join-wait": "~0.5.2",
+        "node-red-contrib-s7": "~3.1.0"
+    },
+    "engines": {
+        "node": ">=12"
+    }
+}
