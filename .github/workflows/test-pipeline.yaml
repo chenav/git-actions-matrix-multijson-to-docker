@@ -17,11 +17,11 @@ jobs:
 #simple case with fromJSON (which would be cool, if it worked)
 #engine evaluates $matrix as 'Object' which is not the JSON we would like to pass to the docker build process
   job2:
+      name: 'it fails'
       needs: job1
       runs-on: ubuntu-latest
       strategy:
         matrix: ${{fromJSON(needs.job1.outputs.matrix)}}
-      name: 'Build'
       steps:
         - uses: actions/checkout@v3
         - run: docker build --build-arg CONFIG='${{matrix}}' .
@@ -29,11 +29,11 @@ jobs:
 #trial with toJSON, to avoid the previous problem and pass a JSON string to docker
 #failure again: the JSON is multiline, and can not be interpreted by the docker build
   job3:
+      name: 'it fails'
       needs: job1
       runs-on: ubuntu-latest
       strategy:
         matrix: ${{fromJSON(needs.job1.outputs.matrix)}}
-      name: 'Build'
       steps:
         - uses: actions/checkout@v3
         - run: docker build --build-arg CONFIG='${{ toJSON(matrix) }}'
@@ -42,12 +42,11 @@ jobs:
 #it seems to be the most simple way to do it
 #other trials could involve cat, printf, sed and other "ugly" syntaxes
   job4:
-    name: 'Build Docker with shell to flatten JSON in one-line string'
+    name: 'it works'
     needs: job1
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{fromJSON(needs.job1.outputs.matrix)}}
-    
     steps:
       - uses: actions/checkout@v3
       - run: |
